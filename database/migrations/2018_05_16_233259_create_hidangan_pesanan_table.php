@@ -15,7 +15,8 @@ class CreateHidanganPesananTable extends Migration
     {
         Schema::create('hidangan_pesanan', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('hidangan_id')->unsigned();
+            //$table->integer('hidangan_id')->unsigned();
+            $table->string('hidangan_kode_hidangan');
             $table->integer('pesanan_id')->unsigned();
             $table->timestamps();
         });

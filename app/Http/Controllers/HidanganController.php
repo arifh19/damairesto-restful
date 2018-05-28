@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Hidangan;
 
+
 class HidanganController extends Controller
 {
     // public function __construct(){
@@ -22,14 +23,11 @@ class HidanganController extends Controller
         $hidangans = Hidangan::all();
         foreach ($hidangans as $hidangan) {
             $hidangan->view_hidangan = [
-                'href' => 'api/v1/hidangan/' . $hidangan->id,
+                'href' => 'api/v1/hidangan/' . $hidangan->kode_hidangan,
                 'method' => 'GET'
             ];
         }
-        $response = [
-            'msg' => 'List Hidangan',
-            'hidangans' => $hidangans
-        ];
+        $response =  $hidangans;
 
         return response()->json($response,200);
     }
@@ -53,6 +51,7 @@ class HidanganController extends Controller
     public function store(Request $request)
     {
         $this->validate($request,[
+            'kode_hidangan' => 'required',
             'nama_hidangan' => 'required',
             'deskripsi' => 'required',
             'stok' => 'required',
@@ -61,6 +60,7 @@ class HidanganController extends Controller
         //    'user_id' => 'required',
 
         ]);
+        $kode_hidangan = $request->input('kode_hidangan');
         $nama_hidangan = $request->input('nama_hidangan');
         $deskripsi = $request->input('deskripsi');
         $stok = $request->input('stok');
@@ -69,6 +69,7 @@ class HidanganController extends Controller
         //$user_id = $request->input('user_id');
 
         $hidangan = new Hidangan([
+            'kode_hidangan' => $kode_hidangan,
             'nama_hidangan' => $nama_hidangan,
             'deskripsi' => $deskripsi,
             'stok' => $stok,
@@ -79,7 +80,7 @@ class HidanganController extends Controller
         if($hidangan->save()){
            // $hidangan->users()->attach($user_id);
             $hidangan->view_hidangan =[
-                'href' => 'api/v1/hidangan/' .$hidangan->id,
+                'href' => 'api/v1/hidangan/' .$hidangan->kode_hidangan,
                 'method' => 'GET'
             ];
             $message = [
@@ -103,15 +104,14 @@ class HidanganController extends Controller
      */
     public function show($id)
     {
-        $hidangan = Hidangan::with('pesanans')->where('id', $id)->firstOrFail();
+        $hidangan = Hidangan::with('pesanans')->where('kode_hidangan', $id)->firstOrFail();
         $hidangan->view_hidangans = [
             'href' => 'api/v1/hidangan',
             'method' => 'GET'
         ];
-        $response = [
-            'message' => 'Hidangan information',
-            'hidangan' => $hidangan
-        ];
+        $response = $hidangan;
+     
+
         return response()->json($response, 200);
     }
 
@@ -135,20 +135,22 @@ class HidanganController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->validate($request,[
-            'nama_hidangan' => 'required',
-            'deskripsi' => 'required',
-            'stok' => 'required',
-            'harga' => 'required',
-            'waktu' => 'required',
-            //'user_id' => 'required',
-        ]);
+        // $this->validate($request,[
+        //     'nama_hidangan' => 'required',
+        //     'deskripsi' => 'required',
+        //     'stok' => 'required',
+        //     'harga' => 'required',
+        //     'waktu' => 'required',
+        //     //'user_id' => 'required',
+        // ]);
         $nama_hidangan = $request->input('nama_hidangan');
         $deskripsi = $request->input('deskripsi');
         $stok = $request->input('stok');
         $harga = $request->input('harga');
         $waktu = $request->input('waktu');
-        //$user_id = $request->input('user_id');
+        $user_id = $request->input('user_id');
+
+
 
         $hidangan = Hidangan::with('pesanans')->findOrFail($id);
 
@@ -156,12 +158,16 @@ class HidanganController extends Controller
         //     return response()->json(['msg'=>'user not registered for hidangan, update not successful'],401);
         // };
 
-        $hidangan->nama_hidangan = $nama_hidangan;
-        $hidangan->deskripsi = $deskripsi;
-        $hidangan->stok = $stok;
-        $hidangan->harga = $harga;
-        $hidangan->waktu = $waktu;
-
+        if(empty($nama_hidangan)||empty($deskripsi)||empty($waktu)){
+            $hidangan->stok = $stok;
+            $hidangan->harga = $harga;
+        }else{
+            $hidangan->nama_hidangan = $nama_hidangan;
+            $hidangan->deskripsi = $deskripsi;
+            $hidangan->stok = $stok;
+            $hidangan->harga = $harga;
+            $hidangan->waktu = $waktu;
+        }
         if(!$hidangan->update()){
             return response()->json([
                 'msg' => 'Error during update'

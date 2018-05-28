@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Antrian;
+use Illuminate\Support\Facades\DB;
+use Doctrine\DBAL\Driver\PDOConnection;
 
-class AntrianController extends Controller
+class RestMngController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,9 +15,9 @@ class AntrianController extends Controller
      */
     public function index()
     {
-        $totalAntrian = Antrian::all();
-        $response = $totalAntrian;
-        return response()->json($response,200);
+       $response = DB::select(DB::raw("CALL GetRestMng;"));
+       //$response = DB::select(DB::raw("SELECT * from statistikas group by date;"));
+        return response()->json($response, 200);
     }
 
     /**
@@ -48,7 +49,8 @@ class AntrianController extends Controller
      */
     public function show($id)
     {
-        //
+        $response = DB::select(DB::raw("CALL GetPesanan($id)"));
+        return response()->json($response, 200);
     }
 
     /**

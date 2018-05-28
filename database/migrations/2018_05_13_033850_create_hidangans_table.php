@@ -14,7 +14,8 @@ class CreateHidangansTable extends Migration
     public function up()
     {
         Schema::create('hidangans', function (Blueprint $table) {
-            $table->increments('id');
+            //$table->increments('id');
+            $table->string('kode_hidangan')->unique();
             $table->string('nama_hidangan');
             $table->text('deskripsi');
             $table->integer('stok')->unsigned();

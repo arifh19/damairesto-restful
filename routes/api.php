@@ -22,7 +22,15 @@ Route::group(['prefix' =>'v1', 'middleware' => 'cors'], function(){
         'except' => ['create','edit']
     ]);
 
+    Route::resource('users', 'AuthController',[
+        'except' => ['create','edit']
+    ]);
+
     Route::resource('pesanan', 'PesananController',[
+        'except' => ['create','edit']
+    ]);
+
+    Route::resource('pesanhidangan', 'PesanHidanganController',[
         'except' => ['create','edit']
     ]);
 
@@ -37,12 +45,28 @@ Route::group(['prefix' =>'v1', 'middleware' => 'cors'], function(){
     Route::post('/user/signin',[
         'uses' => 'AuthController@signin'
     ]);
-    Route::get('/users',[
-        'uses' => 'AuthController@index'
-    ]);
+    //Route::get('/users',[
+      //  'uses' => 'AuthController@index'
+    //]);
 
     Route::get('/antrian',[
         'uses' => 'AntrianController@index'
     ]);
+
+    Route::get('/earnings',[
+        'uses' => 'DailyReportController@total'
+    ]);
+
+    Route::resource('restmng', 'RestMngController',[
+        'only' => ['show','index']
+    ]);
+
+    Route::resource('dailyreport', 'DailyReportController',[
+        'only' => ['show','index']
+    ]);
+    Route::resource('statistika', 'StatistikaController',[
+        'except' => ['create','edit']
+    ]);
+
 });
 

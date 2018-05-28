@@ -6,6 +6,7 @@ use Doctrine\DBAL\Driver\PDOConnection;
 use Illuminate\Http\Request;
 use App\Pesanan;
 use App\Antrian;
+use App\Hidangan;
 
 class PesananController extends Controller
 {
@@ -17,16 +18,16 @@ class PesananController extends Controller
     public function index()
     {
         $Pesanans = Pesanan::all();
-        foreach ($Pesanans as $Pesanan) {
-            $Pesanan->view_Pesanan = [
-                'href' => 'api/v1/pesanan/' . $Pesanan->id,
-                'method' => 'GET'
-            ];
-        }
-        $response = [
-            'msg' => 'List Pesanan',
-            'Pesanans' => $Pesanans
-        ];
+        // foreach ($Pesanans as $Pesanan) {
+        //     $Pesanan->view_Pesanan = [
+        //         'href' => 'api/v1/pesanan/' . $Pesanan->id,
+        //         'method' => 'GET'
+        //     ];
+        // }
+        // $response = [
+        //     'Pesanans' => $Pesanans
+        // ];
+        $response = $Pesanans;
 
         return response()->json($response,200);
     }
@@ -41,46 +42,50 @@ class PesananController extends Controller
     public function store(Request $request)
     {
         $this->validate($request,[
-            'hidangan_id' => 'required',
+            'kode_hidangan' => 'required',
             'nomor_meja' => 'required',
             'nama_pelanggan' => 'required',
             'kuantitas' => 'required',
+            'informasi' => 'required',
         //    'user_id' => 'required',
 
         ]);
-        $hidangan_id = $request->input('hidangan_id');
+        $kode_hidangan = $request->input('kode_hidangan');
         $nomor_meja = $request->input('nomor_meja');
         $nama_pelanggan = $request->input('nama_pelanggan');
         $kuantitas = $request->input('kuantitas');
-        $informasi = $request->input('');
+        $antrian = $request->input('informasi');
         //$totalAntrian = Antrian::get();
-        $totalAntrian = DB::table('antrians')->get();
+        if($kuantitas<=5) $pengali=5;
+        else if($kuantitas<=10) $pengali=10;
+        else $pengali=15;
+        $informasi = ceil(($antrian/3))*$pengali;
 
-       // $setinformasi = DB::select('Call GetInformasi(5,6,?)');
-       // $informasi =$setinformasi;
-        //    $results = DB::select('CALL GetInformasi(10,"aaa",100,6,5)');
-        DB::select(DB::raw("CALL GetInformasi($hidangan_id,$nomor_meja,'$nama_pelanggan', $kuantitas,$totalAntrian,5)"));
+    //    // $setinformasi = DB::select('Call GetInformasi(5,6,?)');
+    //    // $informasi =$setinformasi;
+    //     //    $results = DB::select('CALL GetInformasi(10,"aaa",100,6,5)');
+    //     DB::select(DB::raw("CALL GetInformasi($hidangan_id,$nomor_meja,'$nama_pelanggan', $kuantitas,$totalAntrian,5)"));
 
         $Pesanan = new Pesanan([
-            'hidangan_id' => $hidangan_id,
+            'kode_hidangan' => $kode_hidangan,
             'nomor_meja' => $nomor_meja,
             'nama_pelanggan' => $nama_pelanggan,
             'kuantitas' => $kuantitas,
             'informasi' => $informasi,
         ]);
 
-        // if($Pesanan->save()){
-        //     //$Pesanan->hidangans()->attach($hidangan_id);
-        //     $Pesanan->view_pesanan =[
-        //         'href' => 'api/v1/pesanan/' .$Pesanan->id,
-        //         'method' => 'GET'
-        //     ];
-        //     $message = [
-        //         'msg' => 'Pesanan Created',
-        //         'Pesanan' => $Pesanan
-        //     ];
-        //     return response()->json($message,201);
-        // }
+        if($Pesanan->save()){
+            $Pesanan->hidangans()->attach($kode_hidangan);
+            $Pesanan->view_pesanan =[
+                'href' => 'api/v1/pesanan/' .$Pesanan->id,
+                'method' => 'GET'
+            ];
+            $message = [
+                'msg' => 'Pesanan Created',
+                'Pesanan' => $Pesanan
+            ];
+            return response()->json($message,201);
+        }
 
             $message = [
                 'msg' => 'Pesanan Created',
@@ -98,15 +103,14 @@ class PesananController extends Controller
      */
     public function show($id)
     {
-        $pesanan = Pesanan::all()->where('id', $id);
+       $pesanan = Pesanan::all()->where('nomor_meja', $id);
+        //$pesanan = Pesanan::with('pesanans')->where('hidangan_kode_hidangan', $id)->firstOrFail();
         $pesanan->view_hidangans = [
             'href' => 'api/v1/hidangan',
             'method' => 'GET'
         ];
-        $response = [
-            'message' => 'Pesanan information',
-            'pesanan' => $pesanan
-        ];
+        $response = $pesanan;
+
         return response()->json($response, 200);
     }
 
@@ -137,7 +141,26 @@ class PesananController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
-    {
-        //
+    {//::with('pesanans')->where('kode_hidangan', $id)->firstOrFail()
+        $pesanan = Pesanan::where('nomor_meja', $id)->firstOrFail();
+        $hidangans = $pesanan->hidangans;
+        $pesanan->hidangans()->detach();
+        if(!$pesanan->delete()){
+            foreach ($hidangans as $hidangan){
+                $pesanan->hidangans()->attach($kode_hidangan);
+            }
+            return response()->json([
+                'message' => 'Deletion Failed'
+            ], 404);
+        }
+        $response = [
+            'message' => 'Pesanan deleted',
+            'create' => [
+                'href' => 'api/v1/pesanan',
+                'method' => 'POST',
+                'params' => 'kode_hidangan, nomor_meja, nama_pelanggan, kuantitas, informasi'
+            ]
+        ];
+        return response()->json($response, 200);
     }
 }

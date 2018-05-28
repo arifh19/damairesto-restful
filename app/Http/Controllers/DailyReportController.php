@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Antrian;
+use Illuminate\Support\Facades\DB;
+use Doctrine\DBAL\Driver\PDOConnection;
 
-class AntrianController extends Controller
+class DailyReportController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,9 +15,9 @@ class AntrianController extends Controller
      */
     public function index()
     {
-        $totalAntrian = Antrian::all();
-        $response = $totalAntrian;
-        return response()->json($response,200);
+        $response = DB::select(DB::raw("CALL DailyReport();"));
+        return response()->json($response, 200);
+
     }
 
     /**
@@ -24,10 +25,11 @@ class AntrianController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
-        //
-    }
+     public function total()
+     {
+        $response = DB::select(DB::raw("select sum(earning) as earnings from statistikas;"));
+        return response()->json($response, 200);
+     }
 
     /**
      * Store a newly created resource in storage.

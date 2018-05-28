@@ -41,27 +41,27 @@ class PesananPelangganController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'hidangan_id' => 'required',
+            'hidangan_kode_hidangan' => 'required',
             'pesanan_id' => 'required',
         ]);
 
         $pesanan_id = $request->input('pesanan_id');
-        $hidangan_id = $request->input('hidangan_id');
+        $hidangan_kode_hidangan = $request->input('hidangan_kode_hidangan');
 
         $pesanan = Pesanan::findOrFail($pesanan_id);
-        $hidangan = Hidangan::findOrFail($hidangan_id);
+        $hidangan = Hidangan::findOrFail($hidangan_kode_hidangan);
 
         $message = [
             'msg' => 'Anda sudah memesan hidangan ini',
             'user' => $user,
             'hidangan' => $hidangan,
             'unregister' => [
-                'href' => 'api/v1/pesanan/' . $hidangan->id,
+                'href' => 'api/v1/pesanan/' . $hidangan->hidangan_kode_hidangan,
                 'method' => 'DELETE',
             ]
         ];
 
-        if($pesanan->hidangans()->where('hidangans.id',$hidangan->id)->first()){
+        if($pesanan->hidangans()->where('hidangans.kode_hidangan',$hidangan->hidangan_kode_hidangan)->first()){
             return response()->json($message, 404);
         };
 
@@ -72,7 +72,7 @@ class PesananPelangganController extends Controller
             'pesanan' => $pesanan,
             'hidangan' => $hidangan,
             'unregister' => [
-                'href' => 'api/v1/pesanan/' . $hidangan->id,
+                'href' => 'api/v1/pesanan/' . $hidangan->kode_hidangan,
                 'method' => 'DELETE',
             ]
         ];

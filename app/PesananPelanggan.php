@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PesananPelanggan extends Model
 {
-    protected $fillable = ['hidangan_id','nomor_meja','nama_pelanggan','kuantitas'];
+
+    protected $fillable = ['kode_hidangan','nomor_meja','nama_pelanggan','kuantitas'];
 
     public function hidangans()
     {

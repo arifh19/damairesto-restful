@@ -7,8 +7,7 @@ use App\Hidangan;
 
 class Pesanan extends Model
 {
-    protected $fillable = ['hidangan_id','kode_hidangan','nomor_meja','nama_pelanggan','kuantitas'];
-
+    protected $fillable = ['kode_hidangan','nomor_meja','nama_pelanggan','kuantitas','informasi'];
     public function hidangans()
     {
         return $this->belongsToMany(Hidangan::class);

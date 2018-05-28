@@ -9,11 +9,11 @@ use JWTAuthException;
 
 class AuthController extends Controller
 {
-    public function __construct(){
-       //$this->middleware('jwt.auth');
-         $this->middleware('jwt.auth',
-         ['except' => ['index']]);
-    }
+    // public function __construct(){
+    //    //$this->middleware('jwt.auth');
+    //      $this->middleware('jwt.auth',
+    //      ['except' => ['index']]);
+    // }
 
     public function index()
     {
@@ -24,10 +24,7 @@ class AuthController extends Controller
                 'method' => 'GET'
             ];
         }
-        $response = [
-            'msg' => 'List User',
-            'users' => $users
-        ];
+        $response = $users;
 
         return response()->json($response,200);
     }
@@ -91,6 +88,16 @@ class AuthController extends Controller
         return response()->json($response,404);
     }
 
+	public function show($id)
+    	{
+       $user = User::all()->where('username', $id);
+        //$pesanan = Pesanan::with('pesanans')->where('hidangan_kode_hidangan', $id)->firstOrFail();
+
+        $response = $user;
+        //$response = $pesanan;
+        return response()->json($response, 200);
+    }
+
     public function signin(Request $request){
 
         $this->validate($request, [
@@ -130,5 +137,52 @@ class AuthController extends Controller
         ];
         return response()->json($response, 404);
     }
+public function update(Request $request, $id)
+    {
+        $username = $request->input('username');
+        $nama = $request->input('name');
+        $password = $request->input('password');
+        $status = $request->input('status');
 
+        // if(!$hidangan->pesanans()->where('users.id', $user_id)->first()){
+        //     return response()->json(['msg'=>'user not registered for hidangan, update not successful'],401);
+        // };
+            $user = User::where('username', $id)->firstOrFail();
+            $user->username = $username;
+            $user->name = $nama;
+            $user->password = $password;
+            $user->status = $status;
+
+        if(!$user->update()){
+            return response()->json([
+                'msg' => 'Error during update'
+            ], 404);
+        }
+
+
+        $response = $user;
+
+        return response()->json($response,200);
+
+    }
+
+public function destroy($id)
+    {
+        $user = User::where('username', $id)->firstOrFail();
+
+        if(!$user->delete()){
+            
+            return response()->json([
+                'message' => 'Deletion Failed'
+            ], 404);
+        }
+        $response = [
+            'message' => 'User deleted',
+            'create' => [
+                'href' => 'api/v1/users',
+                'method' => 'POST'
+            ]
+        ];
+        return response()->json($response, 200);
+    }
 }

@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Antrian;
 
-class AntrianController extends Controller
+class ViewPesananController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,8 +13,18 @@ class AntrianController extends Controller
      */
     public function index()
     {
-        $totalAntrian = Antrian::all();
-        $response = $totalAntrian;
+        $viewpesanan = ViewPesanan::all();
+        foreach ($Pesanans as $Pesanan) {
+            $Pesanan->view_Pesanan = [
+                'href' => 'api/v1/pesanan/' . $Pesanan->id,
+                'method' => 'GET'
+            ];
+        }
+        $response = [
+            'msg' => 'List Pesanan',
+            'Pesanans' => $Pesanans
+        ];
+
         return response()->json($response,200);
     }
 
